@@ -37,6 +37,7 @@ class Config:
                 local_config = json.load(f)
             config.update(local_config)
 
+        self.provider = config.get('provider', 'opencode')
         self.model = config.get('model', 'opencode/grok-code')
         self.default_plan = '.cyclon.plan.md'
         self.default_prompt = '.cyclon.prompt.md'
@@ -53,7 +54,7 @@ class ArgumentParser:
 
     def parse(self):
         """Parse command-line arguments and return parsed args."""
-        parser = argparse.ArgumentParser(description='Generic opencode automation script.')
+        parser = argparse.ArgumentParser(description='Generic automation script using various providers.')
         parser.add_argument('--plan', type=str, default=self.config.default_plan, help='Path to the plan file')
         parser.add_argument('--prompt', type=str, default=self.config.default_prompt, help='Path to the prompt file')
         return parser.parse_args()
@@ -99,8 +100,8 @@ class ExceptionChecker:
                 return True
         return False
 
-class OpencodeRunner:
-    """Handles running opencode commands in a loop, checking lock file existence."""
+class Runner:
+    """Handles running provider commands in a loop, checking lock file existence."""
 
     def __init__(self, config, exception_checker):
         """Initialize with config and exception checker."""
@@ -108,9 +109,18 @@ class OpencodeRunner:
         self.exception_checker = exception_checker
         self.lock_file = '.cyclon.lock'
 
+    def get_command(self, full_prompt):
+        """Resolve command list based on provider."""
+        if self.config.provider == 'opencode':
+            return ["opencode", "run", "--model", self.config.model] + full_prompt.split()
+        elif self.config.provider == 'copilot':
+            return ["copilot", "-p", full_prompt, "--allow-all-tools"]
+        else:
+            raise ValueError(f"Unsupported provider: {self.config.provider}")
+
     def run_loop(self, full_prompt):
         """Run the opencode command in a loop with error handling, exiting if lock file is removed."""
-        print(f"Starting opencode loop with model: {self.config.model}")
+        print(f"Starting {self.config.provider} loop with model: {self.config.model}")
         print(f"Plan file: {self.config.default_plan}")
         print(f"Prompt file: {self.config.default_prompt}")
         print(f"Sleep duration: {self.config.sleep_duration}s")
@@ -121,8 +131,10 @@ class OpencodeRunner:
                 break
             proc = None
             try:
+                command = self.get_command(full_prompt)
+
                 proc = subprocess.Popen(
-                    ["opencode", "run", "--model", self.config.model, full_prompt],
+                    command,
                     stdin=sys.stdin,
                     stdout=sys.stdout,
                     stderr=subprocess.PIPE,
@@ -131,7 +143,7 @@ class OpencodeRunner:
                 proc.wait(timeout=self.config.timeout)
                 if proc.returncode != 0:
                     stderr_output = proc.stderr.read() if proc.stderr else ""
-                    print(f"Opencode failed with return code {proc.returncode}")
+                    print(f"{self.config.provider.capitalize()} failed with return code {proc.returncode}")
                     print(f"Stderr: {stderr_output}")
                     if self.exception_checker.check(stderr_output):
                         print(f"Exception matched, sleeping for {self.config.sleep_duration} seconds...")
@@ -141,15 +153,15 @@ class OpencodeRunner:
                         print("Unmatched error, stopping.")
                         break
                 else:
-                    print("Opencode completed successfully.")
+                    print(f"{self.config.provider.capitalize()} completed successfully.")
                     print("Iteration complete, proceeding to next.")
             except subprocess.TimeoutExpired:
-                print("Opencode timed out.")
+                print(f"{self.config.provider.capitalize()} timed out.")
                 if proc:
                     proc.kill()
                 break
             except FileNotFoundError:
-                print("Opencode command not found. Ensure opencode is installed and in PATH.")
+                print(f"{self.config.provider.capitalize()} command not found. Ensure {self.config.provider} is installed and in PATH.")
                 break
             except KeyboardInterrupt:
                 print("Interrupted by user.")
@@ -178,7 +190,7 @@ def main():
         print(f"Error: {e}")
         sys.exit(1)
     exception_checker = ExceptionChecker(config.exception_strings)
-    runner = OpencodeRunner(config, exception_checker)
+    runner = Runner(config, exception_checker)
     runner.run_loop(full_prompt)
 
     # Clean up context file after successful run

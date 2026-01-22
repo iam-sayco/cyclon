@@ -1,4 +1,5 @@
 {
+    "provider": "opencode",
     "model": "opencode/grok-code",
     "exceptionStrings": ["Service temporarily unavailable", "model is at capacity"],
     "sleep": 10,

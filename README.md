@@ -1,7 +1,7 @@
 # Cyclon
 
-Cyclon is a generic script to automate tasks using opencode in a loop. It reads a plan (checklist) and prompt from 
-markdown files, combines them into a full prompt, and executes opencode commands in a loop with error handling
+Cyclon is a generic script to automate tasks using various AI providers in a loop. It reads a plan (checklist) and prompt from
+markdown files, combines them into a full prompt, and executes provider commands in a loop with error handling
 and retries.
 
 ## Usage
@@ -29,20 +29,31 @@ Then run `source ~/.zshrc`.
 
 Now you can run `cyclon` from any directory.
 
+## Supported Providers
+
+Cyclon supports multiple AI providers:
+
+- **opencode**: Uses opencode with configurable models
+- **copilot**: Uses GitHub Copilot with the model currently set in interactive mode
+
+For copilot, the model cannot be selected directly. To change the model, enter copilot interactive mode and use `/model` 
+to select the desired model, then exit and use cyclon.
+
 The script will:
 - Create a lock file (`.cyclon.lock`) to prevent multiple instances.
 - Read and combine the plan and prompt files.
 - Append instructions for context and lock removal.
-- Run opencode in a loop, retrying on specific exceptions.
+- Run the configured provider in a loop, retrying on specific exceptions.
 - Stop if the lock file is removed or an unhandled error occurs.
 
 ## Configuration
 
 Edit `config.json` or create a local `.cyclon.config.json` to customize:
-- Model: opencode model to use
+- Provider: AI provider to use ("opencode" or "copilot")
+- Model: opencode model to use (ignored for copilot)
 - Exception strings to retry on
 - Sleep duration between retries
-- Timeout for opencode commands
+- Timeout for provider commands
 
 Plan and prompt files are fixed as `.cyclon.plan.md` and `.cyclon.prompt.md`.
 
