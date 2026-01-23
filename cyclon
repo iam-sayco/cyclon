@@ -112,7 +112,7 @@ class Runner:
     def get_command(self, full_prompt):
         """Resolve command list based on provider."""
         if self.config.provider == 'opencode':
-            return ["opencode", "run", "--model", self.config.model] + full_prompt.split()
+            return ["opencode", "run", "--model", self.config.model, full_prompt]
         elif self.config.provider == 'copilot':
             return ["copilot", "-p", full_prompt, "--allow-all-tools"]
         else:
