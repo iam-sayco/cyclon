@@ -1,0 +1,10 @@
+{
+  "opencode": {
+    "label": "OpenCode",
+    "command": ["opencode", "run", "--model", "{model}", "{prompt}"]
+  },
+  "copilot": {
+    "label": "Github Copilot",
+    "command": ["copilot", "-p", "{prompt}", "--model", "{model}", "--allow-all"]
+  }
+}
