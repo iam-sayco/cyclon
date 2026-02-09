@@ -430,7 +430,7 @@ required fields.
 1. **Update your branch**:
    ```bash
    git fetch upstream
-   git rebase upstream/main
+   git rebase upstream/2.x
    ```
 
 2. **Run quality checks**:
