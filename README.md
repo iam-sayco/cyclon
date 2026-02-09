@@ -19,13 +19,13 @@ Cyclon is a powerful TUI-based AI automation tool that takes your work plan and 
 ## 🚀 Quick Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/iam-sayco/cyclon/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/iam-sayco/cyclon/2.x/install.sh | bash
 ```
 
 Or with wget:
 
 ```bash
-wget -qO- https://raw.githubusercontent.com/iam-sayco/cyclon/main/install.sh | bash
+wget -qO- https://raw.githubusercontent.com/iam-sayco/cyclon/2.x/install.sh | bash
 ```
 
 This will automatically detect and use `pipx` (recommended) or `pip` to install the latest version from GitHub.
