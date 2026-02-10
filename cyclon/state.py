@@ -9,9 +9,9 @@ from __future__ import annotations
 import asyncio
 import contextlib
 from collections.abc import Callable
-from typing import TypeVar
+from typing import Any, TypeVar
 
-from ptyprocess import PtyProcessUnicode
+from ptyprocess import PtyProcessUnicode  # type: ignore[import-untyped]
 
 T = TypeVar("T")
 
@@ -151,32 +151,32 @@ class AppState:
     # Reference properties (not reactive, just stored)
 
     @property
-    def throbber_timer(self):
+    def throbber_timer(self) -> Any:
         """Get throbber animation timer reference."""
         return self._throbber_timer
 
     @throbber_timer.setter
-    def throbber_timer(self, value) -> None:
+    def throbber_timer(self, value: Any) -> None:
         """Set throbber animation timer reference."""
         self._throbber_timer = value
 
     @property
-    def throbber_ref(self):
+    def throbber_ref(self) -> Any:
         """Get throbber widget reference."""
         return self._throbber_ref
 
     @throbber_ref.setter
-    def throbber_ref(self, value) -> None:
+    def throbber_ref(self, value: Any) -> None:
         """Set throbber widget reference."""
         self._throbber_ref = value
 
     @property
-    def process_status_ref(self):
+    def process_status_ref(self) -> Any:
         """Get process status widget reference."""
         return self._process_status_ref
 
     @process_status_ref.setter
-    def process_status_ref(self, value) -> None:
+    def process_status_ref(self, value: Any) -> None:
         """Set process status widget reference."""
         self._process_status_ref = value
 
@@ -295,7 +295,7 @@ class AppState:
         if self._throbber_timer is not None:
             with contextlib.suppress(Exception):
                 self._throbber_timer.stop()
-            self._throbber_timer = None
+            self._throbber_timer = None  # type: ignore[unreachable]
 
     def __repr__(self) -> str:
         """Return string representation of state."""

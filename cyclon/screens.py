@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+from typing import Any
 
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
@@ -10,7 +11,7 @@ from textual.screen import ModalScreen
 from textual.widgets import Input, RadioButton, RadioSet, Static, TextArea
 
 
-class BaseModalScreen(ModalScreen):
+class BaseModalScreen(ModalScreen[dict[str, Any]]):
     """Base class for all modal screens with common functionality."""
 
     BINDINGS = [("escape", "dismiss", "Close")]
@@ -196,7 +197,7 @@ class ProviderModalScreen(BaseModalScreen):
     }
     """
 
-    def __init__(self, config_service=None, *args, **kwargs):
+    def __init__(self, config_service: Any = None, *args: Any, **kwargs: Any) -> None:
         """Initialize provider modal with optional config service.
 
         Args:
@@ -208,7 +209,7 @@ class ProviderModalScreen(BaseModalScreen):
         self.config_service = config_service
         self.providers = self.load_providers()
 
-    def load_providers(self):
+    def load_providers(self) -> dict[str, Any]:
         """Load available providers from config service or file.
 
         Returns:
@@ -293,7 +294,7 @@ class ModelModalScreen(BaseModalScreen):
     }
     """
 
-    def __init__(self, current_model: str = "", *args, **kwargs):
+    def __init__(self, current_model: str = "", *args: Any, **kwargs: Any) -> None:
         """Initialize model modal with current model name.
 
         Args:
@@ -391,10 +392,10 @@ class FileModalScreen(BaseModalScreen):
         self,
         file_name: str = "plan.md",
         modal_title: str = "Edit Plan",
-        file_service=None,
-        *args,
-        **kwargs,
-    ):
+        file_service: Any = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
         """Initialize file modal with file configuration.
 
         Args:

@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+from typing import Any
 
 from cyclon.paths import DEFAULT_CONFIG_FILE, LOCAL_CONFIG_FILE, LOCAL_CYCLON_DIR
 
@@ -19,7 +20,7 @@ class ConfigManager:
         self.default_config = DEFAULT_CONFIG_FILE
         self.local_config_file = LOCAL_CONFIG_FILE
 
-    def load_config(self) -> dict:
+    def load_config(self) -> dict[str, Any]:
         """Load configuration from default and local config files.
 
         Returns:
@@ -35,7 +36,7 @@ class ConfigManager:
                 config.update(local)
         return config
 
-    def save(self, config: dict) -> None:
+    def save(self, config: dict[str, Any]) -> None:
         """Save configuration to local config file.
 
         Args:
@@ -45,7 +46,7 @@ class ConfigManager:
         with open(self.local_config_file, "w") as f:
             json.dump(config, f, indent=2)
 
-    def get(self, key: str, default=None):
+    def get(self, key: str, default: Any = None) -> Any:
         """Get configuration value by key.
 
         Args:
@@ -57,7 +58,7 @@ class ConfigManager:
         """
         return self.load_config().get(key, default)
 
-    def set(self, key: str, value) -> None:
+    def set(self, key: str, value: Any) -> None:
         """Set configuration value by key.
 
         Args:

@@ -35,10 +35,10 @@ COMMANDS_DATA = [
 VALID_COMMANDS = [cmd[0] for cmd in COMMANDS_DATA]
 
 
-def build_commands_list():
+def build_commands_list() -> list[DropdownItem]:
     """Build list of commands for autocomplete dropdown."""
     max_cmd_len = max(len(cmd) for cmd, _ in COMMANDS_DATA)
-    commands_list = []
+    commands_list: list[DropdownItem] = []
     for cmd, desc in COMMANDS_DATA:
         display_text = f"{cmd.ljust(max_cmd_len + 2)}[dim]{desc}[/dim]"
         item = DropdownItem(main=Content.from_markup(display_text))
