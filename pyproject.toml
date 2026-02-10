@@ -7,7 +7,7 @@ name = "cyclon"
 version = "2.0.0-rc"
 description = "Orchestrate AI agents to execute complex coding workflows with a terminal UI - define your plan, let AI handle the rest."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [{name = "Mariusz Andrzejewski (Sayco)", email = "sayco@saycode.pl"}]
 license = {text = "MIT"}
 dependencies = [
@@ -65,7 +65,7 @@ cyclon = ["data/**/*"]
 
 [tool.black]
 line-length = 100
-target-version = ['py39', 'py310', 'py311', 'py312']
+target-version = ['py310', 'py311', 'py312', 'py313']
 include = '\.pyi?$'
 exclude = '''
 /(
@@ -79,7 +79,7 @@ exclude = '''
 '''
 
 [tool.ruff]
-target-version = "py39"
+target-version = "py310"
 line-length = 100
 
 [tool.ruff.lint]
@@ -111,7 +111,7 @@ convention = "google"
 max-complexity = 10
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.10"
 strict = true
 warn_return_any = true
 warn_unused_configs = true

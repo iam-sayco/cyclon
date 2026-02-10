@@ -1,7 +1,7 @@
 """Constants for Cyclon."""
 
-from textual_autocomplete._autocomplete import DropdownItem
 from textual.content import Content
+from textual_autocomplete._autocomplete import DropdownItem
 
 # Filenames
 CONFIG_FILENAME = "config.json"

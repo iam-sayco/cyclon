@@ -1,45 +1,46 @@
 """Pytest configuration and fixtures for Cyclon tests."""
 
 import json
+import shutil
 import sys
+import tempfile
+import types
 from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-import pytest_asyncio
 
 
 def pytest_configure(config):
     """Configure pytest before test collection - setup mocked paths."""
     # Remove any cyclon modules that might be already imported
-    modules_to_remove = [key for key in sys.modules.keys() if key.startswith('cyclon')]
+    modules_to_remove = [key for key in sys.modules if key.startswith("cyclon")]
     for mod in modules_to_remove:
         del sys.modules[mod]
-    
+
     # Create a mock paths module
-    import types
-    mock_paths = types.ModuleType('cyclon.paths')
-    
+    mock_paths = types.ModuleType("cyclon.paths")
+
     # Create temp directories
-    import tempfile
-    base_temp = Path(tempfile.mkdtemp(prefix='cyclon_test_'))
-    
+    base_temp = Path(tempfile.mkdtemp(prefix="cyclon_test_"))
+
     cyclon_dir = base_temp / ".cyclon"
     data_dir = base_temp / "data"
     prompts_dir = data_dir / "prompts"
-    
+
     cyclon_dir.mkdir(exist_ok=True)
     data_dir.mkdir(exist_ok=True)
     prompts_dir.mkdir(exist_ok=True)
-    
+
     # Create required data files
     (data_dir / "providers.json").write_text(json.dumps({}, indent=2))
     (data_dir / "config.json").write_text(json.dumps({}, indent=2))
     (data_dir / "logo.md").write_text("CYCLON")
     (prompts_dir / "execute.md").write_text(
-        "CWD: {cwd}\nPlan: {plan_path}\nLock: {lock_file}\nContext: {context_file}\nInstructions: {user_instructions}"
+        "CWD: {cwd}\nPlan: {plan_path}\nLock: {lock_file}\n"
+        "Context: {context_file}\nInstructions: {user_instructions}"
     )
-    
+
     # Set attributes on mock module
     mock_paths.PROJECT_ROOT = base_temp
     mock_paths.PROVIDERS_FILE = data_dir / "providers.json"
@@ -51,19 +52,18 @@ def pytest_configure(config):
     mock_paths.LOCAL_PLAN_FILE = cyclon_dir / "plan.md"
     mock_paths.LOCAL_PROMPT_FILE = cyclon_dir / "prompt.md"
     mock_paths.LOCAL_LOCK_FILE = cyclon_dir / "process.lock"
-    
+
     # Store for cleanup
     pytest_configure.base_temp = base_temp
-    
+
     # Inject into sys.modules BEFORE importing any cyclon modules
-    sys.modules['cyclon.paths'] = mock_paths
+    sys.modules["cyclon.paths"] = mock_paths
 
 
 def pytest_unconfigure(config):
     """Cleanup after all tests."""
     # Cleanup temp directory
-    import shutil
-    if hasattr(pytest_configure, 'base_temp'):
+    if hasattr(pytest_configure, "base_temp"):
         shutil.rmtree(pytest_configure.base_temp, ignore_errors=True)
 
 
@@ -75,30 +75,27 @@ def sample_providers_data():
             "name": "OpenCode",
             "command": "opencode",
             "model_placeholder": "{model}",
-            "description": "OpenCode CLI provider"
+            "description": "OpenCode CLI provider",
         },
         "test-provider": {
             "name": "Test Provider",
             "command": ["test", "--model", "{model}", "--prompt", "{prompt}"],
             "model_placeholder": "{model}",
-            "description": "Test provider for unit tests"
+            "description": "Test provider for unit tests",
         },
         "complex-provider": {
             "name": "Complex Provider",
             "command": ["complex", "--provider", "{model}", "--input", "{prompt}"],
             "model_placeholder": "{model}",
-            "description": "Provider with different placeholders"
-        }
+            "description": "Provider with different placeholders",
+        },
     }
 
 
 @pytest.fixture
 def sample_config_data():
     """Return sample configuration data."""
-    return {
-        "provider": "opencode",
-        "model": "gpt-4"
-    }
+    return {"provider": "opencode", "model": "gpt-4"}
 
 
 @pytest.fixture
@@ -116,7 +113,8 @@ def mock_pty_process():
 @pytest.fixture
 def mock_cyclon_paths():
     """Return the mocked paths used by cyclon modules."""
-    import cyclon.paths as paths
+    from cyclon import paths  # noqa: PLC0415
+
     return {
         "base_temp": paths.PROJECT_ROOT,
         "cyclon_dir": paths.LOCAL_CYCLON_DIR,
@@ -135,36 +133,38 @@ def mock_cyclon_paths():
 @pytest.fixture
 def config_service(mock_cyclon_paths):
     """Create a ConfigService instance with clean state."""
-    from cyclon.services.config_service import ConfigService
-    
+    from cyclon.services.config_service import ConfigService  # noqa: PLC0415
+
     # Clean up any existing config files before creating service
     if mock_cyclon_paths["local_config_file"].exists():
         mock_cyclon_paths["local_config_file"].write_text("{}")
     if mock_cyclon_paths["default_config_file"].exists():
         mock_cyclon_paths["default_config_file"].write_text("{}")
-    
+
     return ConfigService()
 
 
 @pytest.fixture
 def file_service():
     """Create a FileService instance."""
-    from cyclon.services.file_service import FileService
+    from cyclon.services.file_service import FileService  # noqa: PLC0415
+
     return FileService()
 
 
 @pytest.fixture
 def process_service():
     """Create a ProcessService instance."""
-    from cyclon.services.process_service import ProcessService
+    from cyclon.services.process_service import ProcessService  # noqa: PLC0415
+
     return ProcessService()
 
 
 @pytest.fixture
 def auto_await_mode(request):
     """Auto-await mode fixture for async tests to prevent infinite loops."""
-    import asyncio
-    import select
+    import asyncio  # noqa: PLC0415
+    import select  # noqa: PLC0415
 
     original_to_thread = asyncio.to_thread
     original_select = select.select

@@ -1,12 +1,13 @@
 """Unit tests for validation module."""
 
 import pytest
+
 from cyclon.validation import (
-    validate_string,
-    validate_optional_string,
     validate_list,
-    validate_positive_int,
     validate_not_none,
+    validate_optional_string,
+    validate_positive_int,
+    validate_string,
 )
 
 

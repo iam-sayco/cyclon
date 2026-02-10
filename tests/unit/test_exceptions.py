@@ -1,9 +1,10 @@
 """Unit tests for exceptions module."""
 
 import pytest
+
 from cyclon.exceptions import (
-    CyclonError,
     ConfigError,
+    CyclonError,
     FileError,
     ProcessError,
     ValidationError,
@@ -177,7 +178,7 @@ class TestExceptionHierarchy:
     def test_all_exceptions_catchable_as_cyclon_error(self):
         """All custom exceptions should be catchable as CyclonError."""
         exceptions = [ConfigError, FileError, ProcessError, ValidationError]
-        
+
         for exc_class in exceptions:
             try:
                 raise exc_class("Test message")
@@ -188,7 +189,7 @@ class TestExceptionHierarchy:
     def test_all_exceptions_catchable_as_exception(self):
         """All custom exceptions should be catchable as Exception."""
         exceptions = [CyclonError, ConfigError, FileError, ProcessError, ValidationError]
-        
+
         for exc_class in exceptions:
             try:
                 raise exc_class("Test message")
@@ -213,5 +214,5 @@ class TestExceptionHierarchy:
             caught = "ConfigError"
         except CyclonError:
             caught = "CyclonError"
-        
+
         assert caught == "ConfigError"

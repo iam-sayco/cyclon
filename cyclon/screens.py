@@ -1,20 +1,20 @@
 """Modal screens for Cyclon."""
 
-from textual.screen import ModalScreen
-from textual.containers import Container, Horizontal, Vertical
-from textual.widgets import Static, RadioSet, RadioButton, Input, TextArea
-from textual.events import Key
-from textual.app import ComposeResult
-from pathlib import Path
 import json
-from typing import Optional
+from pathlib import Path
+
+from textual.app import ComposeResult
+from textual.containers import Horizontal, Vertical
+from textual.events import Key
+from textual.screen import ModalScreen
+from textual.widgets import Input, RadioButton, RadioSet, Static, TextArea
 
 
 class BaseModalScreen(ModalScreen):
     """Base class for all modal screens with common functionality."""
-    
+
     BINDINGS = [("escape", "dismiss", "Close")]
-    
+
     DEFAULT_CSS = """
     BaseModalScreen {
         align: center middle;
@@ -50,7 +50,7 @@ class BaseModalScreen(ModalScreen):
         border: solid white;
     }
     """
-    
+
     def on_key(self, event: Key) -> None:
         """Handle escape key to dismiss modal."""
         if event.key == "escape":
@@ -91,7 +91,7 @@ class CommandsModalScreen(BaseModalScreen):
         width: 1fr;
     }
     """
-    
+
     def compose(self) -> ComposeResult:
         """Compose the commands help screen.
 
@@ -102,25 +102,28 @@ class CommandsModalScreen(BaseModalScreen):
             with Horizontal(classes="modal-title-row"):
                 yield Static("[b]Available Commands[/b]", classes="modal-title")
                 yield Static("(esc to close)", classes="esc-hint")
-            
+
             yield Static("", classes="modal-header")
             yield Static("[b]Plan Interaction[/b]", classes="modal-header")
             yield Static("[b]/plan[/b] - View or edit work plan (opens editor)")
-            yield Static("[b]/plan <prompt>[/b] - Generate plan directly from prompt (e.g., /plan create a todo app)")
+            yield Static(
+                "[b]/plan <prompt>[/b] - Generate plan directly from prompt "
+                "(e.g., /plan create a todo app)"
+            )
             yield Static("[b]/prompt[/b] - Additional context/info for plan execution")
-            
+
             yield Static("", classes="modal-header")
             yield Static("[b]Actions[/b]", classes="modal-header")
             yield Static("[b]/run[/b] - Run executing plan")
             yield Static("[b]/stop[/b] - Stop current processing")
             yield Static("[b]/new-session[/b] - Clear all session data except config")
             yield Static("[b]/clear[/b] - Clear output window")
-            
+
             yield Static("", classes="modal-header")
             yield Static("[b]AI Settings[/b]", classes="modal-header")
             yield Static("[b]/provider[/b] - AI coding tool provider")
             yield Static("[b]/model[/b] - AI model (may not be supported by all providers)")
-            
+
             yield Static("", classes="modal-header")
             yield Static("[b]Help[/b]", classes="modal-header")
             yield Static("[b]/help[/b] - Show this commands help (or press F1)")
@@ -192,7 +195,7 @@ class ProviderModalScreen(BaseModalScreen):
         margin-top: 1;
     }
     """
-    
+
     def __init__(self, config_service=None, *args, **kwargs):
         """Initialize provider modal with optional config service.
 
@@ -216,7 +219,7 @@ class ProviderModalScreen(BaseModalScreen):
 
         providers_file = Path(__file__).parent / "data" / "providers.json"
         if providers_file.exists():
-            with open(providers_file, 'r') as f:
+            with open(providers_file) as f:
                 return json.load(f)
         return {}
 
@@ -250,7 +253,9 @@ class ProviderModalScreen(BaseModalScreen):
             event: Radio set change event
         """
         if event.radio_set.id == "provider-radioset" and event.pressed and event.pressed.id:
-            self.dismiss({"provider_id": event.pressed.id, "provider_label": str(event.pressed.label)})
+            self.dismiss(
+                {"provider_id": event.pressed.id, "provider_label": str(event.pressed.label)}
+            )
 
 
 class ModelModalScreen(BaseModalScreen):
@@ -287,7 +292,7 @@ class ModelModalScreen(BaseModalScreen):
         margin-top: 1;
     }
     """
-    
+
     def __init__(self, current_model: str = "", *args, **kwargs):
         """Initialize model modal with current model name.
 
@@ -307,7 +312,9 @@ class ModelModalScreen(BaseModalScreen):
         """
         with Vertical():
             yield Static("[b]Set Model[/b]", classes="modal-header")
-            yield Input(placeholder="Type name of the model", id="model-input", value=self.current_model)
+            yield Input(
+                placeholder="Type name of the model", id="model-input", value=self.current_model
+            )
             yield Static("(hit enter to save)", classes="save-hint")
             yield Static("(esc to close)", classes="close-hint")
 
@@ -351,13 +358,13 @@ class FileModalScreen(BaseModalScreen):
 
     BINDINGS = [("ctrl+s", "save_and_close", "Save")]
 
-    DEFAULT_CSS = f"""
-    FileModalScreen > Vertical {{
+    DEFAULT_CSS = """
+    FileModalScreen > Vertical {
         width: 80%;
         height: 80%;
         padding: 2 4;
-    }}
-    FileModalScreen TextArea {{
+    }
+    FileModalScreen TextArea {
         margin: 1 0;
         height: 1fr;
         border: solid #ed4aff;
@@ -369,18 +376,25 @@ class FileModalScreen(BaseModalScreen):
         scrollbar-color-hover: #ed4aff;
         scrollbar-background-active: #2a1530;
         scrollbar-color-active: #ed4aff;
-    }}
-    FileModalScreen TextArea:focus {{
+    }
+    FileModalScreen TextArea:focus {
         border: solid white;
-    }}
-    FileModalScreen .close-hint {{
+    }
+    FileModalScreen .close-hint {
         text-align: center;
         color: #999;
         margin-top: 1;
-    }}
+    }
     """
-    
-    def __init__(self, file_name: str = "plan.md", modal_title: str = "Edit Plan", file_service=None, *args, **kwargs):
+
+    def __init__(
+        self,
+        file_name: str = "plan.md",
+        modal_title: str = "Edit Plan",
+        file_service=None,
+        *args,
+        **kwargs,
+    ):
         """Initialize file modal with file configuration.
 
         Args:
@@ -408,7 +422,7 @@ class FileModalScreen(BaseModalScreen):
 
         file_path = Path.cwd() / ".cyclon" / self.file_name
         if file_path.exists():
-            with open(file_path, 'r') as f:
+            with open(file_path) as f:
                 return f.read()
         return ""
 
@@ -422,7 +436,10 @@ class FileModalScreen(BaseModalScreen):
             yield Static(f"[b]{self.modal_title}[/b]", classes="modal-header")
 
             if self.file_name == "prompt.md":
-                placeholder_text = "Define your additional requirements (coding standards, conventions, etc.) for plan execution..."
+                placeholder_text = (
+                    "Define your additional requirements (coding standards, "
+                    "conventions, etc.) for plan execution..."
+                )
             elif self.file_name == "plan.md":
                 placeholder_text = "Your work plan with checkboxes..."
             else:
@@ -431,7 +448,9 @@ class FileModalScreen(BaseModalScreen):
             text_area = TextArea(placeholder=placeholder_text, id="file-textarea")
             text_area.load_text(self.content)
             yield text_area
-            yield Static("(ctrl+s to save and close, esc to close without saving)", classes="close-hint")
+            yield Static(
+                "(ctrl+s to save and close, esc to close without saving)", classes="close-hint"
+            )
 
     def on_mount(self) -> None:
         """Focus the text area when screen mounts."""

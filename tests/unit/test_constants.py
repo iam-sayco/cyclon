@@ -1,23 +1,22 @@
 """Unit tests for constants module."""
 
-import pytest
 from textual_autocomplete._autocomplete import DropdownItem
 
 from cyclon.constants import (
-    CONFIG_FILENAME,
-    PLAN_FILENAME,
-    PROMPT_FILENAME,
-    LOCK_FILENAME,
-    CONTEXT_FILENAME,
-    PLAN_GENERATION_TIMEOUT,
-    EXECUTION_TIMEOUT,
-    EXCEPTION_RETRY_DELAY,
-    PROCESS_TERMINATION_DELAY,
-    LOG_MAX_LINES,
     COMMANDS_DATA,
+    COMMANDS_LIST,
+    CONFIG_FILENAME,
+    CONTEXT_FILENAME,
+    EXCEPTION_RETRY_DELAY,
+    EXECUTION_TIMEOUT,
+    LOCK_FILENAME,
+    LOG_MAX_LINES,
+    PLAN_FILENAME,
+    PLAN_GENERATION_TIMEOUT,
+    PROCESS_TERMINATION_DELAY,
+    PROMPT_FILENAME,
     VALID_COMMANDS,
     build_commands_list,
-    COMMANDS_LIST,
 )
 
 
@@ -127,7 +126,7 @@ class TestCommandsConstants:
     def test_valid_commands_derived_from_commands_data(self):
         """VALID_COMMANDS should be derived from COMMANDS_DATA."""
         expected = [cmd[0] for cmd in COMMANDS_DATA]
-        assert VALID_COMMANDS == expected
+        assert expected == VALID_COMMANDS
 
     def test_commands_data_and_valid_commands_same_length(self):
         """COMMANDS_DATA and VALID_COMMANDS should have same length."""
@@ -156,7 +155,7 @@ class TestBuildCommandsList:
         """Each DropdownItem should have main attribute."""
         result = build_commands_list()
         for item in result:
-            assert hasattr(item, 'main')
+            assert hasattr(item, "main")
             assert item.main is not None
 
 
@@ -180,7 +179,7 @@ class TestCommandsList:
         built = build_commands_list()
         assert len(COMMANDS_LIST) == len(built)
         # Compare string representations since DropdownItem doesn't have __eq__
-        for i, (cached, fresh) in enumerate(zip(COMMANDS_LIST, built)):
+        for _i, (cached, fresh) in enumerate(zip(COMMANDS_LIST, built, strict=False)):
             assert str(cached.main) == str(fresh.main)
 
 
@@ -194,7 +193,7 @@ class TestConstantsAreImmutable:
         if commands_copy:
             commands_copy.pop()
         # VALID_COMMANDS should be unchanged
-        assert VALID_COMMANDS == original_valid
+        assert original_valid == VALID_COMMANDS
 
     def test_creating_new_list_from_commands_data(self):
         """Should be able to create new list from COMMANDS_DATA."""

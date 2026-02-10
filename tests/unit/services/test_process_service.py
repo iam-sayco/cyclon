@@ -1,14 +1,15 @@
 """Unit tests for ProcessService."""
 
-from unittest.mock import MagicMock, AsyncMock, patch
+from unittest.mock import MagicMock, patch
+
 import pytest
-import asyncio
 
 from cyclon.exceptions import ProcessError
 
 
 # Helper to make async tests terminate quickly
 async def quick_await(*args, **kwargs):
+    """Quick await helper for async tests to terminate immediately."""
     return ""
 
 
@@ -78,45 +79,34 @@ class TestCheckException:
     def test_check_exception_found_returns_true(self, process_service):
         """Test that True is returned when exception is found."""
         result = process_service.check_exception(
-            "Error: Something went wrong",
-            ["Error:", "Exception"]
+            "Error: Something went wrong", ["Error:", "Exception"]
         )
 
         assert result is True
 
     def test_check_exception_not_found_returns_false(self, process_service):
         """Test that False is returned when exception is not found."""
-        result = process_service.check_exception(
-            "Normal output",
-            ["Error:", "Exception"]
-        )
+        result = process_service.check_exception("Normal output", ["Error:", "Exception"])
 
         assert result is False
 
     def test_check_exception_empty_list_returns_false(self, process_service):
         """Test that False is returned for empty exception list."""
-        result = process_service.check_exception(
-            "Some output",
-            []
-        )
+        result = process_service.check_exception("Some output", [])
 
         assert result is False
 
     def test_check_exception_multiple_strings(self, process_service):
         """Test that multiple exception strings work correctly."""
         result = process_service.check_exception(
-            "Traceback: Something",
-            ["Error:", "Exception", "Traceback:"]
+            "Traceback: Something", ["Error:", "Exception", "Traceback:"]
         )
 
         assert result is True
 
     def test_check_exception_partial_match_returns_true(self, process_service):
         """Test that substring match works correctly."""
-        result = process_service.check_exception(
-            "Error: Something went wrong here",
-            ["Error"]
-        )
+        result = process_service.check_exception("Error: Something went wrong here", ["Error"])
 
         assert result is True
 
@@ -125,12 +115,16 @@ class TestRunProviderProcess:
     """Tests for ProcessService.run_provider_process() method."""
 
     @pytest.mark.asyncio
-    async def test_run_provider_process_success(self, process_service, mock_pty_process, auto_await_mode):
+    async def test_run_provider_process_success(
+        self, process_service, mock_pty_process, auto_await_mode
+    ):
         """Test that successful execution returns (0, output)."""
         mock_pty_process.isalive.side_effect = [True, False]
         mock_pty_process.wait.return_value = 0
 
-        with patch('cyclon.services.process_service.PtyProcessUnicode.spawn', return_value=mock_pty_process):
+        with patch(
+            "cyclon.services.process_service.PtyProcessUnicode.spawn", return_value=mock_pty_process
+        ):
             returncode, output = await process_service.run_provider_process(
                 ["echo", "test"], timeout=10
             )
@@ -140,8 +134,10 @@ class TestRunProviderProcess:
     @pytest.mark.asyncio
     async def test_run_provider_process_file_not_found(self, process_service, auto_await_mode):
         """Test that FileNotFoundError returns (-1, error_msg)."""
-        with patch('cyclon.services.process_service.PtyProcessUnicode.spawn',
-                   side_effect=FileNotFoundError("Command not found")):
+        with patch(
+            "cyclon.services.process_service.PtyProcessUnicode.spawn",
+            side_effect=FileNotFoundError("Command not found"),
+        ):
             output_callback = MagicMock()
             returncode, output = await process_service.run_provider_process(
                 ["nonexistent", "command"], timeout=10, output_callback=output_callback
@@ -155,8 +151,10 @@ class TestRunProviderProcess:
     @pytest.mark.asyncio
     async def test_run_provider_process_process_error(self, process_service, auto_await_mode):
         """Test that ProcessError returns (-1, error_msg)."""
-        with patch('cyclon.services.process_service.PtyProcessUnicode.spawn',
-                   side_effect=ProcessError("Process error")):
+        with patch(
+            "cyclon.services.process_service.PtyProcessUnicode.spawn",
+            side_effect=ProcessError("Process error"),
+        ):
             output_callback = MagicMock()
             returncode, output = await process_service.run_provider_process(
                 ["test", "cmd"], timeout=10, output_callback=output_callback
@@ -168,7 +166,9 @@ class TestRunProviderProcess:
             assert output_callback.called
 
     @pytest.mark.asyncio
-    async def test_run_provider_process_empty_command_raises_value_error(self, process_service, auto_await_mode):
+    async def test_run_provider_process_empty_command_raises_value_error(
+        self, process_service, auto_await_mode
+    ):
         """Test that empty command list raises ValueError."""
         with pytest.raises(ValueError) as exc_info:
             await process_service.run_provider_process([], timeout=10)
@@ -176,7 +176,9 @@ class TestRunProviderProcess:
         assert "command" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_run_provider_process_none_in_command_raises_value_error(self, process_service, auto_await_mode):
+    async def test_run_provider_process_none_in_command_raises_value_error(
+        self, process_service, auto_await_mode
+    ):
         """Test that None in command raises ValueError."""
         with pytest.raises(ValueError) as exc_info:
             await process_service.run_provider_process(["test", None], timeout=10)
@@ -184,7 +186,9 @@ class TestRunProviderProcess:
         assert "command" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_run_provider_process_timeout_zero_raises_value_error(self, process_service, auto_await_mode):
+    async def test_run_provider_process_timeout_zero_raises_value_error(
+        self, process_service, auto_await_mode
+    ):
         """Test that timeout=0 raises ValueError."""
         with pytest.raises(ValueError) as exc_info:
             await process_service.run_provider_process(["test"], timeout=0)
@@ -192,7 +196,9 @@ class TestRunProviderProcess:
         assert "timeout" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_run_provider_process_timeout_negative_raises_value_error(self, process_service, auto_await_mode):
+    async def test_run_provider_process_timeout_negative_raises_value_error(
+        self, process_service, auto_await_mode
+    ):
         """Test that negative timeout raises ValueError."""
         with pytest.raises(ValueError) as exc_info:
             await process_service.run_provider_process(["test"], timeout=-1)
@@ -200,7 +206,9 @@ class TestRunProviderProcess:
         assert "timeout" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_run_provider_process_timeout_string_raises_value_error(self, process_service, auto_await_mode):
+    async def test_run_provider_process_timeout_string_raises_value_error(
+        self, process_service, auto_await_mode
+    ):
         """Test that string timeout raises ValueError."""
         with pytest.raises(ValueError) as exc_info:
             await process_service.run_provider_process(["test"], timeout="10")
@@ -208,10 +216,14 @@ class TestRunProviderProcess:
         assert "timeout" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_run_provider_process_calls_output_callback_on_error(self, process_service, auto_await_mode):
+    async def test_run_provider_process_calls_output_callback_on_error(
+        self, process_service, auto_await_mode
+    ):
         """Test that output_callback is called on error."""
-        with patch('cyclon.services.process_service.PtyProcessUnicode.spawn',
-                   side_effect=Exception("Test error")):
+        with patch(
+            "cyclon.services.process_service.PtyProcessUnicode.spawn",
+            side_effect=Exception("Test error"),
+        ):
             output_callback = MagicMock()
             await process_service.run_provider_process(
                 ["test"], timeout=10, output_callback=output_callback
@@ -221,7 +233,9 @@ class TestRunProviderProcess:
             assert "Error" in output_callback.call_args[0][0]
 
     @pytest.mark.asyncio
-    async def test_run_provider_process_calls_pty_callback(self, process_service, mock_pty_process, auto_await_mode):
+    async def test_run_provider_process_calls_pty_callback(
+        self, process_service, mock_pty_process, auto_await_mode
+    ):
         """Test that pty_changed_callback is called on start and end."""
         mock_pty_process.isalive.return_value = False
         mock_pty_process.wait.return_value = 0
@@ -229,13 +243,17 @@ class TestRunProviderProcess:
         pty_callback = MagicMock()
         process_service.set_pty_changed_callback(pty_callback)
 
-        with patch('cyclon.services.process_service.PtyProcessUnicode.spawn', return_value=mock_pty_process):
+        with patch(
+            "cyclon.services.process_service.PtyProcessUnicode.spawn", return_value=mock_pty_process
+        ):
             await process_service.run_provider_process(["test"], timeout=10)
 
             assert pty_callback.call_count == 2  # Start and end
 
     @pytest.mark.asyncio
-    async def test_run_provider_process_sets_write_callback(self, process_service, mock_pty_process, auto_await_mode):
+    async def test_run_provider_process_sets_write_callback(
+        self, process_service, mock_pty_process, auto_await_mode
+    ):
         """Test that write_callback is set and cleared."""
         mock_widget = MagicMock()
         mock_widget.set_write_callback = MagicMock()
@@ -244,7 +262,9 @@ class TestRunProviderProcess:
         mock_pty_process.isalive.return_value = False
         mock_pty_process.wait.return_value = 0
 
-        with patch('cyclon.services.process_service.PtyProcessUnicode.spawn', return_value=mock_pty_process):
+        with patch(
+            "cyclon.services.process_service.PtyProcessUnicode.spawn", return_value=mock_pty_process
+        ):
             await process_service.run_provider_process(["test"], timeout=10)
 
             assert mock_widget.set_write_callback.call_count >= 2
@@ -264,18 +284,17 @@ class TestStopProcess:
         mock_pty_process.isalive.return_value = True
         process_service.current_pty = mock_pty_process
 
-        with patch('cyclon.services.process_service.time.sleep'):
+        with patch("cyclon.services.process_service.time.sleep"):
             process_service.stop_process()
 
             mock_pty_process.terminate.assert_called_once()
 
     def test_stop_process_force_kills_unresponsive_process(self, process_service, mock_pty_process):
         """Test that unresponsive process is killed with SIGKILL."""
-        import signal
         mock_pty_process.isalive.return_value = True
         process_service.current_pty = mock_pty_process
 
-        with patch('cyclon.services.process_service.time.sleep'):
+        with patch("cyclon.services.process_service.time.sleep"):
             process_service.stop_process()
 
             mock_pty_process.kill.assert_called_once()

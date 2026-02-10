@@ -1,10 +1,12 @@
 """Unit tests for FileService."""
 
+import io
 import os
+import shutil
 from pathlib import Path
 from unittest.mock import patch
+
 import pytest
-import cyclon.paths
 
 from cyclon.exceptions import FileError
 
@@ -24,7 +26,6 @@ class TestSaveFile:
         """Test that .cyclon directory is created if it doesn't exist."""
         cyclon_dir = mock_cyclon_paths["local_config_file"].parent
         if cyclon_dir.exists():
-            import shutil
             shutil.rmtree(cyclon_dir)
 
         file_service.save_file("test.txt", "content")
@@ -70,7 +71,7 @@ class TestSaveFile:
 
     def test_save_file_oserror_raises_file_error(self, file_service):
         """Test that OSError on write raises FileError."""
-        with patch('builtins.open', side_effect=OSError("Permission denied")):
+        with patch("builtins.open", side_effect=OSError("Permission denied")):
             with pytest.raises(FileError) as exc_info:
                 file_service.save_file("test.txt", "content")
 
@@ -112,7 +113,6 @@ class TestSavePlan:
         """Test that .cyclon directory is created."""
         cyclon_dir = mock_cyclon_paths["local_plan_file"].parent
         if cyclon_dir.exists():
-            import shutil
             shutil.rmtree(cyclon_dir)
 
         file_service.save_plan("plan")
@@ -122,7 +122,7 @@ class TestSavePlan:
 
     def test_save_plan_oserror_raises_file_error(self, file_service):
         """Test that OSError raises FileError."""
-        with patch('builtins.open', side_effect=OSError("Permission denied")):
+        with patch("builtins.open", side_effect=OSError("Permission denied")):
             with pytest.raises(FileError) as exc_info:
                 file_service.save_plan("plan")
 
@@ -153,7 +153,7 @@ class TestLoadLogo:
         """Test that OSError raises FileError."""
         mock_cyclon_paths["logo_file"].touch()
 
-        with patch('builtins.open', side_effect=OSError("Permission denied")):
+        with patch("builtins.open", side_effect=OSError("Permission denied")):
             with pytest.raises(FileError) as exc_info:
                 file_service.load_logo()
 
@@ -222,18 +222,20 @@ class TestLoadGeneratePrompt:
 
     def test_load_generate_prompt_resolve_error_raises_file_error(self, file_service):
         """Test that resolve error raises FileError."""
-        with patch.object(Path, 'resolve', side_effect=OSError("Resolve error")):
+        with patch.object(Path, "resolve", side_effect=OSError("Resolve error")):
             with pytest.raises(FileError) as exc_info:
                 file_service.load_generate_prompt("prompt")
 
             assert "Error resolving plan file path" in str(exc_info.value)
 
-    def test_load_generate_prompt_read_error_raises_file_error(self, file_service, mock_cyclon_paths):
+    def test_load_generate_prompt_read_error_raises_file_error(
+        self, file_service, mock_cyclon_paths
+    ):
         """Test that read error raises FileError."""
         template_file = mock_cyclon_paths["prompts_dir"] / "generate.md"
         template_file.write_text("content")
 
-        with patch('builtins.open', side_effect=OSError("Read error")):
+        with patch("builtins.open", side_effect=OSError("Read error")):
             with pytest.raises(FileError) as exc_info:
                 file_service.load_generate_prompt("prompt")
 
@@ -327,7 +329,9 @@ class TestBuildExecutionPrompt:
 
         assert "{context_file}" not in result
 
-    def test_build_execution_prompt_replaces_user_instructions(self, file_service, mock_cyclon_paths):
+    def test_build_execution_prompt_replaces_user_instructions(
+        self, file_service, mock_cyclon_paths
+    ):
         """Test that {user_instructions} placeholder is replaced."""
         template_file = mock_cyclon_paths["prompts_dir"] / "execute.md"
         template_file.write_text("Instructions: {user_instructions}")
@@ -349,18 +353,22 @@ class TestBuildExecutionPrompt:
 
         assert "N/A" in result
 
-    def test_build_execution_prompt_resolve_error_raises_file_error(self, file_service, mock_cyclon_paths):
+    def test_build_execution_prompt_resolve_error_raises_file_error(
+        self, file_service, mock_cyclon_paths
+    ):
         """Test that resolve error raises FileError."""
         template_file = mock_cyclon_paths["prompts_dir"] / "execute.md"
         template_file.write_text("{cwd}")
 
-        with patch.object(Path, 'resolve', side_effect=OSError("Resolve error")):
+        with patch.object(Path, "resolve", side_effect=OSError("Resolve error")):
             with pytest.raises(FileError) as exc_info:
                 file_service.build_execution_prompt()
 
             assert "Error resolving file paths" in str(exc_info.value)
 
-    def test_build_execution_prompt_plan_read_error_raises_file_error(self, file_service, mock_cyclon_paths):
+    def test_build_execution_prompt_plan_read_error_raises_file_error(
+        self, file_service, mock_cyclon_paths
+    ):
         """Test that plan read error raises FileError."""
         template_file = mock_cyclon_paths["prompts_dir"] / "execute.md"
         template_file.write_text("{plan_path}")
@@ -369,18 +377,19 @@ class TestBuildExecutionPrompt:
 
         def open_side_effect(*args, **kwargs):
             if len(args) > 0 and "execute.md" in str(args[0]):
-                import io
                 return io.StringIO("{plan_path}")
             else:
                 raise OSError("Read error")
 
-        with patch('builtins.open', side_effect=open_side_effect):
+        with patch("builtins.open", side_effect=open_side_effect):
             with pytest.raises(FileError) as exc_info:
                 file_service.build_execution_prompt()
 
             assert "Error reading plan file" in str(exc_info.value)
 
-    def test_build_execution_prompt_read_error_raises_file_error(self, file_service, mock_cyclon_paths):
+    def test_build_execution_prompt_read_error_raises_file_error(
+        self, file_service, mock_cyclon_paths
+    ):
         """Test that prompt read error raises FileError."""
         template_file = mock_cyclon_paths["prompts_dir"] / "execute.md"
         template_file.write_text("{user_instructions}")
@@ -388,15 +397,13 @@ class TestBuildExecutionPrompt:
 
         def open_side_effect(*args, **kwargs):
             if len(args) > 0 and "execute.md" in str(args[0]):
-                import io
                 return io.StringIO("{user_instructions}")
             elif len(args) > 0 and "prompt.md" in str(args[0]):
                 raise OSError("Read error")
             else:
-                import io
                 return io.StringIO("")
 
-        with patch('builtins.open', side_effect=open_side_effect):
+        with patch("builtins.open", side_effect=open_side_effect):
             with pytest.raises(FileError) as exc_info:
                 file_service.build_execution_prompt()
 
@@ -437,11 +444,11 @@ class TestClearSession:
     def test_clear_session_removes_all_files_except_config(self, file_service, mock_cyclon_paths):
         """Test that all files except config.json are removed."""
         cyclon_dir = mock_cyclon_paths["local_config_file"].parent
-        
+
         # Ensure config.json exists before test
         if not mock_cyclon_paths["local_config_file"].exists():
             mock_cyclon_paths["local_config_file"].write_text("{}")
-        
+
         (cyclon_dir / "test1.txt").write_text("test1")
         (cyclon_dir / "test2.txt").write_text("test2")
         mock_cyclon_paths["local_lock_file"].touch()
@@ -481,7 +488,7 @@ class TestClearSession:
         cyclon_dir = mock_cyclon_paths["local_lock_file"].parent
         (cyclon_dir / "test.txt").write_text("test")
 
-        with patch.object(Path, 'unlink', side_effect=OSError("Delete error")):
+        with patch.object(Path, "unlink", side_effect=OSError("Delete error")):
             with pytest.raises(FileError) as exc_info:
                 file_service.clear_session()
 
@@ -532,7 +539,7 @@ class TestLoadContent:
         test_file = cyclon_dir / "test.txt"
         test_file.write_text("content")
 
-        with patch('builtins.open', side_effect=OSError("Read error")):
+        with patch("builtins.open", side_effect=OSError("Read error")):
             with pytest.raises(FileError) as exc_info:
                 file_service.load_content("test.txt")
 
@@ -618,7 +625,6 @@ class TestCreateLockFile:
         """Test that .cyclon directory is created."""
         cyclon_dir = mock_cyclon_paths["local_lock_file"].parent
         if cyclon_dir.exists():
-            import shutil
             shutil.rmtree(cyclon_dir)
 
         file_service.create_lock_file()
@@ -628,7 +634,7 @@ class TestCreateLockFile:
 
     def test_create_lock_file_oserror_raises_file_error(self, file_service):
         """Test that OSError raises FileError."""
-        with patch.object(Path, 'touch', side_effect=OSError("Create error")):
+        with patch.object(Path, "touch", side_effect=OSError("Create error")):
             with pytest.raises(FileError) as exc_info:
                 file_service.create_lock_file()
 
@@ -659,7 +665,7 @@ class TestRemoveLockFile:
         """Test that OSError raises FileError."""
         mock_cyclon_paths["local_lock_file"].touch()
 
-        with patch.object(Path, 'unlink', side_effect=OSError("Delete error")):
+        with patch.object(Path, "unlink", side_effect=OSError("Delete error")):
             with pytest.raises(FileError) as exc_info:
                 file_service.remove_lock_file()
 
@@ -716,7 +722,7 @@ class TestRemoveContextFile:
         context_file = mock_cyclon_paths["local_config_file"].parent / "context.md"
         context_file.touch()
 
-        with patch.object(Path, 'unlink', side_effect=OSError("Delete error")):
+        with patch.object(Path, "unlink", side_effect=OSError("Delete error")):
             with pytest.raises(FileError) as exc_info:
                 file_service.remove_context_file()
 

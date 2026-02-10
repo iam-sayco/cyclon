@@ -1,26 +1,30 @@
 """Custom Textual widgets for Cyclon."""
 
-from textual.widgets import Input, Static, RadioSet, RadioButton, RichLog, TextArea
-from textual.suggester import Suggester
-from textual.events import Key
+import json
+from pathlib import Path
+from typing import cast
+
+import pyte
 from rich.text import Text
+from textual.events import Key
+from textual.geometry import Offset, Region, Spacing
+from textual.suggester import Suggester
+from textual.widgets import Input, Static
 from textual_autocomplete import AutoComplete
 from textual_autocomplete._autocomplete import DropdownItem
-from textual.content import Content
-import pyte
 
 
 class TopAlignedAutoComplete(AutoComplete):
     """AutoComplete widget with dropdown positioned above the input field.
-    
+
     Extends Textual's AutoComplete to display suggestions above the target input
     rather than below, useful when the input is at the bottom of the screen.
-    
+
     Attributes:
         target: The input widget to provide autocomplete for
         option_list: List of available autocomplete options
     """
-    
+
     DEFAULT_CSS = """
     TopAlignedAutoComplete {
         width: 100%;
@@ -31,17 +35,17 @@ class TopAlignedAutoComplete(AutoComplete):
         border-bottom: none;
         layer: overlay;
     }
-    
+
     TopAlignedAutoComplete AutoCompleteList {
         width: 100%;
         border: none;
     }
-    
+
     TopAlignedAutoComplete AutoCompleteList .option-list--option {
         width: 100%;
         padding: 0 2;
     }
-    
+
     TopAlignedAutoComplete AutoCompleteList .option-list--option-highlighted {
         background: #ed4aff;
         color: #1a0a1f;
@@ -49,15 +53,13 @@ class TopAlignedAutoComplete(AutoComplete):
     """
 
     def _align_to_target(self) -> None:
-        from textual.geometry import Region, Offset, Spacing
-        
         target_region = self.target.region
         x = target_region.x
         y = target_region.y
         width, height = self.outer_size
-        
+
         dropdown_y = y - height
-        
+
         x, dropdown_y, _width, _height = Region(x, dropdown_y, width, height).constrain(
             "inside",
             "none",
@@ -65,25 +67,20 @@ class TopAlignedAutoComplete(AutoComplete):
             self.screen.scrollable_content_region,
         )
         self.absolute_offset = Offset(x, dropdown_y)
-    
+
     def _complete(self, option_index: int) -> None:
-        from typing import cast
-        
         if not self.display or self.option_list.option_count == 0:
             return
 
         option_list = self.option_list
         highlighted = option_index
         option = cast(DropdownItem, option_list.get_option_at_index(highlighted))
-        
+
         main_content = option.main
-        if hasattr(main_content, 'plain'):
-            plain_text = main_content.plain
-        else:
-            plain_text = str(main_content)
-        
+        plain_text = main_content.plain if hasattr(main_content, "plain") else str(main_content)
+
         highlighted_value = plain_text.split()[0] if plain_text else ""
-            
+
         with self.prevent(Input.Changed):
             self.apply_completion(highlighted_value, self._get_target_state())
         self.post_completion()
@@ -91,16 +88,34 @@ class TopAlignedAutoComplete(AutoComplete):
 
 class CommandSuggester(Suggester):
     """Suggester for Cyclon slash commands.
-    
+
     Provides command suggestions when user types "/" in the input field.
-    
+
     Attributes:
         COMMANDS: List of available slash commands
     """
 
-    COMMANDS = ["/plan", "/run", "/stop", "/prompt", "/clear", "/new-session", "/model", "/provider", "/help"]
+    COMMANDS = [
+        "/plan",
+        "/run",
+        "/stop",
+        "/prompt",
+        "/clear",
+        "/new-session",
+        "/model",
+        "/provider",
+        "/help",
+    ]
 
     async def get_suggestion(self, value: str) -> str | None:
+        """Get command suggestion based on current input value.
+
+        Args:
+            value: Current input value to check for suggestions.
+
+        Returns:
+            Matching command string if found, None otherwise.
+        """
         if value.startswith("/"):
             for cmd in self.COMMANDS:
                 if cmd.startswith(value) and cmd != value:
@@ -146,13 +161,13 @@ class TerminalOutput(Static):
         border: none;
     }
     """
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._pty_screen = pyte.Screen(80, 24)
         self._pty_stream = pyte.Stream(self._pty_screen)
         self._write_callback = None
-    
+
     def set_write_callback(self, callback):
         """Set callback for forwarding keyboard input to PTY process.
 
@@ -171,7 +186,7 @@ class TerminalOutput(Static):
             data: String or bytes to write to terminal
         """
         if isinstance(data, bytes):
-            data = data.decode('utf-8', errors='replace')
+            data = data.decode("utf-8", errors="replace")
         self._pty_stream.feed(data)
         self._render_screen()
 
@@ -180,7 +195,7 @@ class TerminalOutput(Static):
         lines = []
         for line in self._pty_screen.display:
             lines.append(line.rstrip())
-        content = '\n'.join(lines)
+        content = "\n".join(lines)
 
         text = Text()
         text.append(content, style="white")
@@ -227,18 +242,20 @@ class TerminalOutput(Static):
                 "backspace": "\x7f",
                 "escape": "\x1b",
             }
-            
+
             key_char = event.key
             if key_char in key_mapping:
                 key_char = key_mapping[key_char]
-            
+
             self._write_callback(key_char)
             event.stop()
-    
+
     def on_mouse_scroll_up(self, event) -> None:
+        """Handle mouse scroll up event."""
         pass
-    
+
     def on_mouse_scroll_down(self, event) -> None:
+        """Handle mouse scroll down event."""
         pass
 
 
@@ -274,20 +291,17 @@ class StatusIndicator(Static):
         Reads .cyclon/config.json and displays the configured provider
         and model in the format "provider / model".
         """
-        import json
-        from pathlib import Path
-        
         config_file = Path.cwd() / ".cyclon" / "config.json"
-        
+
         if config_file.exists():
-            with open(config_file, 'r') as f:
+            with open(config_file) as f:
                 config = json.load(f)
             provider = config.get("provider", "N/A")
             model = config.get("model", "N/A")
         else:
             provider = "N/A"
             model = "N/A"
-        
+
         self.update(f"[b]{provider}[/b] / {model}")
 
 
@@ -376,7 +390,9 @@ class ProcessStatus(Static):
         super().__init__(*args, **kwargs)
         self.running_state = False
         self.pty_mode = False
-        self.update("[#999999]🌀 the calm before the storm... type /run to unleash the real power[/#999999]")
+        self.update(
+            "[#999999]🌀 the calm before the storm... type /run to unleash the real power[/#999999]"
+        )
 
     def set_running(self, running: bool):
         """Set the running state and update status display.
@@ -401,7 +417,10 @@ class ProcessStatus(Static):
         if self.running_state:
             self.update("[#00ff88]🌪️  winds picking up... /stop to calm the vortex[/#00ff88]")
         else:
-            self.update("[#999999]🌀 the calm before the storm... type /run to unleash the real power[/#999999]")
+            self.update(
+                "[#999999]🌀 the calm before the storm... type /run to unleash "
+                "the real power[/#999999]"
+            )
 
     def get_running_state(self) -> bool:
         """Get the current running state.
@@ -424,4 +443,9 @@ class PromptInput(Input):
     """
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, placeholder="Type /plan <your request> to generate a plan, or /help for commands", suggester=CommandSuggester(), **kwargs)
+        super().__init__(
+            *args,
+            placeholder="Type /plan <your request> to generate a plan, or /help for commands",
+            suggester=CommandSuggester(),
+            **kwargs,
+        )
