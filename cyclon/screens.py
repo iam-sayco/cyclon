@@ -216,12 +216,14 @@ class ProviderModalScreen(BaseModalScreen):
             Dictionary of provider configurations
         """
         if self.config_service:
-            return self.config_service.load_providers()
+            providers_result: dict[str, Any] = self.config_service.load_providers()
+            return providers_result
 
         providers_file = Path(__file__).parent / "data" / "providers.json"
         if providers_file.exists():
             with open(providers_file) as f:
-                return json.load(f)
+                file_result: dict[str, Any] = json.load(f)
+                return file_result
         return {}
 
     def compose(self) -> ComposeResult:
@@ -418,7 +420,7 @@ class FileModalScreen(BaseModalScreen):
             File content as string, or empty string if file doesn't exist
         """
         if self.file_service:
-            content = self.file_service.load_content(self.file_name)
+            content: str | None = self.file_service.load_content(self.file_name)
             return content if content is not None else ""
 
         file_path = Path.cwd() / ".cyclon" / self.file_name

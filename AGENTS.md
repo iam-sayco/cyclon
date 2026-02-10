@@ -101,10 +101,10 @@ tests/
 def test_load_config_success(config_service, mock_cyclon_paths):
     # Arrange
     mock_config_file.write_text('{"provider": "test"}')
-    
+
     # Act
     result = config_service.load_config()
-    
+
     # Assert
     assert result["provider"] == "test"
 

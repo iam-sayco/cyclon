@@ -144,7 +144,8 @@ class ConfigService:
         if PROVIDERS_FILE.exists():
             try:
                 with open(PROVIDERS_FILE) as f:
-                    return json.load(f)
+                    result: dict[str, Any] = json.load(f)
+                    return result
             except json.JSONDecodeError as e:
                 raise ConfigError(f"Invalid JSON in providers file: {e}") from e
             except OSError as e:

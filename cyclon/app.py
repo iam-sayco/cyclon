@@ -2,8 +2,9 @@
 
 import asyncio
 import json
+from typing import Any
 
-from ptyprocess import PtyProcessUnicode
+from ptyprocess import PtyProcessUnicode  # type: ignore[import-untyped]
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.widgets import Input, RichLog, Static
@@ -35,7 +36,7 @@ from cyclon.widgets import (
 )
 
 
-class CyclonApp(App):
+class CyclonApp(App[None]):
     """Main Cyclon application with dependency injection and centralized state management."""
 
     def __init__(
@@ -52,7 +53,7 @@ class CyclonApp(App):
         self.app_state = app_state or AppState()
 
         # Set up PTY change callback
-        def pty_changed_callback():
+        def pty_changed_callback() -> None:
             self.app_state.current_pty = self.process_service.current_pty
 
         self.process_service.set_pty_changed_callback(pty_changed_callback)
@@ -211,42 +212,32 @@ class CyclonApp(App):
         self.app_state.pty_mode = value
 
     @property
-    def throbber_timer(self):
+    def throbber_timer(self) -> Any:
         """Get the throbber timer."""
         return self.app_state.throbber_timer
 
     @throbber_timer.setter
-    def throbber_timer(self, value) -> None:
+    def throbber_timer(self, value: Any) -> None:
         """Set the throbber timer."""
         self.app_state.throbber_timer = value
 
     @property
-    def should_stop_processing(self) -> bool:
-        """Get flag indicating if processing should stop."""
-        return self.app_state.should_stop_processing
-
-    @should_stop_processing.setter
-    def should_stop_processing(self, value: bool) -> None:
-        """Set flag indicating if processing should stop."""
-        self.app_state.should_stop_processing = value
-
-    @property
-    def throbber_ref(self):
+    def throbber_ref(self) -> Any:
         """Get reference to throbber widget."""
         return self.app_state.throbber_ref
 
     @throbber_ref.setter
-    def throbber_ref(self, value) -> None:
+    def throbber_ref(self, value: Any) -> None:
         """Set reference to throbber widget."""
         self.app_state.throbber_ref = value
 
     @property
-    def process_status_ref(self):
+    def process_status_ref(self) -> Any:
         """Get reference to process status widget."""
         return self.app_state.process_status_ref
 
     @process_status_ref.setter
-    def process_status_ref(self, value) -> None:
+    def process_status_ref(self, value: Any) -> None:
         """Set reference to process status widget."""
         self.app_state.process_status_ref = value
 
@@ -258,7 +249,7 @@ class CyclonApp(App):
         """Get status message about current configuration."""
         return self.config_service.get_status_message()
 
-    def load_providers(self):
+    def load_providers(self) -> dict[str, Any]:
         """Load available providers configuration."""
         return self.config_service.load_providers()
 
@@ -266,7 +257,7 @@ class CyclonApp(App):
         """Load logo content from file."""
         return self.file_service.load_logo()
 
-    def load_config(self) -> dict:
+    def load_config(self) -> dict[str, Any]:
         """Load configuration from file."""
         return self.config_service.load_config()
 
@@ -284,7 +275,7 @@ class CyclonApp(App):
         exception_strings = config.get("exceptionStrings", [])
         return self.process_service.check_exception(stderr_output, exception_strings)
 
-    def animate_throbber(self):
+    def animate_throbber(self) -> None:
         """Advance throbber to next frame."""
         if self.throbber_ref:
             self.throbber_ref.advance_frame()
@@ -597,7 +588,7 @@ class CyclonApp(App):
 
         self._execute_command(command, argument)
 
-    def on_provider_modal_dismissed(self, result) -> None:
+    def on_provider_modal_dismissed(self, result: dict[str, Any] | None) -> None:
         """Handle provider modal dismissal."""
         if result and isinstance(result, dict):
             provider_id = result.get("provider_id")
@@ -609,7 +600,7 @@ class CyclonApp(App):
         self.prompt_input.value = ""
         self.prompt_input.focus()
 
-    def on_model_modal_dismissed(self, result) -> None:
+    def on_model_modal_dismissed(self, result: dict[str, Any] | None) -> None:
         """Handle model modal dismissal."""
         if result and isinstance(result, dict):
             model = result.get("model")
@@ -620,7 +611,7 @@ class CyclonApp(App):
         self.prompt_input.value = ""
         self.prompt_input.focus()
 
-    def on_file_modal_dismissed(self, result) -> None:
+    def on_file_modal_dismissed(self, result: dict[str, Any] | None) -> None:
         """Handle file modal dismissal."""
         if result and isinstance(result, dict):
             file_name = result.get("file_name")
@@ -743,7 +734,7 @@ class CyclonApp(App):
     def on_mount(self) -> None:
         """Handle application mount event."""
 
-        def write_status():
+        def write_status() -> None:
             status_message = self.get_status_message()
             self.append_output(status_message)
 

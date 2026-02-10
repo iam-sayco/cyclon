@@ -6,7 +6,9 @@ repos:
     rev: v4.5.0
     hooks:
       - id: trailing-whitespace
+        exclude: ^cyclon/data/
       - id: end-of-file-fixer
+        exclude: ^cyclon/data/
       - id: check-yaml
       - id: check-json
       - id: check-toml
@@ -15,13 +17,13 @@ repos:
       - id: debug-statements
 
   - repo: https://github.com/psf/black
-    rev: 24.1.1
+    rev: 24.10.0
     hooks:
       - id: black
         language_version: python3
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.2.1
+    rev: v0.9.4
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
@@ -30,5 +32,13 @@ repos:
     rev: v1.8.0
     hooks:
       - id: mypy
-        additional_dependencies: [types-all]
+        additional_dependencies:
+          - types-PyYAML
+          - types-setuptools
+          - textual
+          - textual-autocomplete
+          - pyte
+          - rich
+          - ptyprocess
         args: [--strict]
+        exclude: ^(tests/|conftest\.py)

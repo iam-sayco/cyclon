@@ -1,12 +1,13 @@
 """Custom Textual widgets for Cyclon."""
 
 import json
+from collections.abc import Callable
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 import pyte
 from rich.text import Text
-from textual.events import Key
+from textual.events import Key, MouseScrollDown, MouseScrollUp
 from textual.geometry import Offset, Region, Spacing
 from textual.suggester import Suggester
 from textual.widgets import Input, Static
@@ -162,13 +163,13 @@ class TerminalOutput(Static):
     }
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self._pty_screen = pyte.Screen(80, 24)
         self._pty_stream = pyte.Stream(self._pty_screen)
-        self._write_callback = None
+        self._write_callback: Callable[[str], None] | None = None
 
-    def set_write_callback(self, callback):
+    def set_write_callback(self, callback: Callable[[str], None] | None) -> None:
         """Set callback for forwarding keyboard input to PTY process.
 
         Args:
@@ -176,7 +177,7 @@ class TerminalOutput(Static):
         """
         self._write_callback = callback
 
-    def write(self, data: str):
+    def write(self, data: str | bytes) -> None:
         """Write data to the terminal screen.
 
         Feeds data to the pyte stream and renders the updated screen.
@@ -190,7 +191,7 @@ class TerminalOutput(Static):
         self._pty_stream.feed(data)
         self._render_screen()
 
-    def _render_screen(self):
+    def _render_screen(self) -> None:
         """Render the current PTY screen content to the widget."""
         lines = []
         for line in self._pty_screen.display:
@@ -201,12 +202,12 @@ class TerminalOutput(Static):
         text.append(content, style="white")
         self.update(text)
 
-    def clear(self):
+    def clear(self) -> None:
         """Clear the terminal screen and reset PTY state."""
         self._pty_screen.reset()
         self._render_screen()
 
-    def write_line(self, text: str, style: str = "white"):
+    def write_line(self, text: str, style: str = "white") -> None:
         """Write a line of text with newline characters.
 
         Args:
@@ -250,11 +251,11 @@ class TerminalOutput(Static):
             self._write_callback(key_char)
             event.stop()
 
-    def on_mouse_scroll_up(self, event) -> None:
+    def on_mouse_scroll_up(self, event: MouseScrollUp) -> None:
         """Handle mouse scroll up event."""
         pass
 
-    def on_mouse_scroll_down(self, event) -> None:
+    def on_mouse_scroll_down(self, event: MouseScrollDown) -> None:
         """Handle mouse scroll down event."""
         pass
 
@@ -281,11 +282,11 @@ class StatusIndicator(Static):
     }
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.update_status()
 
-    def update_status(self):
+    def update_status(self) -> None:
         """Update the status display from configuration file.
 
         Reads .cyclon/config.json and displays the configured provider
@@ -335,11 +336,11 @@ class Throbber(Static):
     frame = 0
     active = False
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.update("")
 
-    def set_active(self, is_active: bool):
+    def set_active(self, is_active: bool) -> None:
         """Activate or deactivate the throbber animation.
 
         Args:
@@ -348,12 +349,12 @@ class Throbber(Static):
         self.active = is_active
         self.update_throbber()
 
-    def advance_frame(self):
+    def advance_frame(self) -> None:
         """Advance to the next frame of the animation."""
         self.frame = (self.frame + 1) % len(self.frames)
         self.update_throbber()
 
-    def update_throbber(self):
+    def update_throbber(self) -> None:
         """Update the displayed throbber based on active state."""
         if self.active:
             self.update(self.frames[self.frame])
@@ -386,7 +387,7 @@ class ProcessStatus(Static):
     }
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.running_state = False
         self.pty_mode = False
@@ -394,7 +395,7 @@ class ProcessStatus(Static):
             "[#999999]🌀 the calm before the storm... type /run to unleash the real power[/#999999]"
         )
 
-    def set_running(self, running: bool):
+    def set_running(self, running: bool) -> None:
         """Set the running state and update status display.
 
         Args:
@@ -403,7 +404,7 @@ class ProcessStatus(Static):
         self.running_state = running
         self.update_status()
 
-    def set_pty_mode(self, pty_mode: bool):
+    def set_pty_mode(self, pty_mode: bool) -> None:
         """Set the PTY mode state.
 
         Args:
@@ -412,7 +413,7 @@ class ProcessStatus(Static):
         self.pty_mode = pty_mode
         self.update_status()
 
-    def update_status(self):
+    def update_status(self) -> None:
         """Update the status message based on current state."""
         if self.running_state:
             self.update("[#00ff88]🌪️  winds picking up... /stop to calm the vortex[/#00ff88]")
@@ -442,9 +443,8 @@ class PromptInput(Input):
         >>> # User types "/" and gets command suggestions
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(
-            *args,
             placeholder="Type /plan <your request> to generate a plan, or /help for commands",
             suggester=CommandSuggester(),
             **kwargs,

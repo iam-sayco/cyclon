@@ -7,7 +7,7 @@ import time
 from collections.abc import Callable
 from typing import Any
 
-from ptyprocess import PtyProcessUnicode
+from ptyprocess import PtyProcessUnicode  # type: ignore[import-untyped]
 
 from cyclon.constants import PROCESS_TERMINATION_DELAY
 from cyclon.exceptions import ProcessError
@@ -105,7 +105,8 @@ class ProcessService:
                 fd = pty_proc.fd
                 rlist, _, _ = select.select([fd], [], [], 0.05)
                 if rlist:
-                    return pty_proc.read(1024)
+                    result: str = pty_proc.read(1024)
+                    return result
                 return ""
             except (EOFError, OSError):
                 return ""
@@ -263,5 +264,6 @@ class ProcessService:
             Optional[int]: Process PID or None if no process is running
         """
         if self.current_pty:
-            return self.current_pty.pid
+            pid: int = self.current_pty.pid
+            return pid
         return None

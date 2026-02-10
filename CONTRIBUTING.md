@@ -249,33 +249,33 @@ from cyclon.services import ConfigService
 
 class TestConfigService:
     """Tests for ConfigService."""
-    
+
     def setup_method(self):
         """Set up test fixtures."""
         self.service = ConfigService()
-    
+
     def test_validate_config_success(self, tmp_path):
         """Test successful config validation."""
         # Arrange
         config_file = tmp_path / "config.json"
         config_file.write_text('{"provider": "test", "model": "gpt-4"}')
-        
+
         with patch('cyclon.services.config_service.LOCAL_CONFIG_FILE', config_file):
             # Act
             is_valid, missing = self.service.validate_config()
-            
+
             # Assert
             assert is_valid is True
             assert missing == []
-    
+
     def test_validate_config_missing_provider(self, tmp_path):
         """Test validation with missing provider."""
         config_file = tmp_path / "config.json"
         config_file.write_text('{"model": "gpt-4"}')
-        
+
         with patch('cyclon.services.config_service.LOCAL_CONFIG_FILE', config_file):
             is_valid, missing = self.service.validate_config()
-            
+
             assert is_valid is False
             assert "provider" in missing
 ```
@@ -437,13 +437,13 @@ required fields.
    ```bash
    # Format code
    black .
-   
+
    # Fix linting
    ruff check . --fix
-   
+
    # Type check
    mypy cyclon/
-   
+
    # Run tests
    pytest
    ```
@@ -499,30 +499,30 @@ Example:
 ```python
 class NewService:
     """Service for new feature.
-    
+
     This service handles X operations including Y and Z.
-    
+
     Example:
         >>> service = NewService()
         >>> result = service.do_something()
     """
-    
+
     def do_something(self, param: str) -> dict[str, Any]:
         """Do something with param.
-        
+
         Args:
             param: Description of param
-            
+
         Returns:
             Description of return value
-            
+
         Raises:
             ValidationError: If param is invalid
             ServiceError: If operation fails
         """
         # Validate input
         validate_string(param, "param")
-        
+
         try:
             # Business logic
             result = self._process(param)
@@ -583,21 +583,21 @@ Use Google-style docstrings:
 ```python
 def example(param1: str, param2: int | None = None) -> bool:
     """Short description.
-    
+
     Longer description if needed. Explain what the function does
     and any important details.
-    
+
     Args:
         param1: Description of param1
         param2: Description of param2 (optional)
-        
+
     Returns:
         Description of return value
-        
+
     Raises:
         ValueError: When param1 is invalid
         FileError: When file operation fails
-        
+
     Example:
         >>> example("test", 42)
         True
@@ -673,19 +673,19 @@ rm -rf .cyclon  # Remove user configuration
 
 ## FAQ
 
-**Q: Do dependencies install automatically?**  
+**Q: Do dependencies install automatically?**
 A: Yes, pip/pipx reads `pyproject.toml` and installs all dependencies automatically.
 
-**Q: Can I test without installing?**  
+**Q: Can I test without installing?**
 A: Yes, run directly with Python: `python -m cyclon` (requires dependencies installed).
 
-**Q: How do I update after code changes?**  
+**Q: How do I update after code changes?**
 A: With `pip install -e .` - no action needed. With pipx - run `pipx install . --force-reinstall`.
 
-**Q: What's the difference between pip and pipx for development?**  
+**Q: What's the difference between pip and pipx for development?**
 A: Use `pip install -e .` for development (editable, fast iteration). Use pipx only when testing final distribution.
 
-**Q: Can I use Cyclon without virtual environment?**  
+**Q: Can I use Cyclon without virtual environment?**
 A: Yes, but using a venv is recommended to avoid polluting system packages.
 
 ## License

@@ -52,9 +52,9 @@ class AppState:
         self._process_running: bool = False
 
         # References (not state per se, but managed here for consistency)
-        self._throbber_timer = None
-        self._throbber_ref = None
-        self._process_status_ref = None
+        self._throbber_timer: Any = None
+        self._throbber_ref: Any = None
+        self._process_status_ref: Any = None
 
         # Observer callbacks
         self._pty_mode_observers: list[Callable[[bool, bool], None]] = []
@@ -295,7 +295,7 @@ class AppState:
         if self._throbber_timer is not None:
             with contextlib.suppress(Exception):
                 self._throbber_timer.stop()
-            self._throbber_timer = None  # type: ignore[unreachable]
+            self._throbber_timer = None
 
     def __repr__(self) -> str:
         """Return string representation of state."""

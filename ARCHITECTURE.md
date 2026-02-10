@@ -135,8 +135,8 @@ Services are injected into CyclonApp constructor, enabling:
 
 ```python
 class CyclonApp(App):
-    def __init__(self, config_service: ConfigService, 
-                 file_service: FileService, 
+    def __init__(self, config_service: ConfigService,
+                 file_service: FileService,
                  process_service: ProcessService):
         # Services injected, not created
 ```
